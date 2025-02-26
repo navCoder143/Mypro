@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Compiler</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #1e1e1e; color: white; }
+        .container { display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Sidebar Styles */
+        .sidebar { width: 0; position: fixed; left: 0; top: 0; height: 100%; background: #333; overflow-x: hidden; transition: 0.3s; padding-top: 60px; }
+        .sidebar button { background: none; border: none; color: white; font-size: 18px; padding: 10px; width: 100%; text-align: left; cursor: pointer; }
+        .sidebar button:hover { background: #555; }
+        .sidebar #closeSidebar { position: absolute; top: 10px; left: 10px; }
+        .sidebar #importFile { position: absolute; top: 10px; right: 10px; }
+        .sidebar #pipButton { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); }
+        
+        /* Main Content */
+        .main { flex: 1; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .title { font-size: 24px; font-weight: bold; text-align: center; flex: 1; }
+        .run-btn { background: green; color: white; border: none; padding: 10px 15px; cursor: pointer; font-size: 18px; }
+        
+        /* Code Editor */
+        .editor-container { position: relative; border: 1px solid gray; margin-top: 10px; }
+        .line-numbers { position: absolute; left: 0; top: 0; width: 40px; background: #222; color: #bbb; text-align: right; padding: 10px; }
+        textarea { width: calc(100% - 40px); margin-left: 40px; height: 300px; background: #1e1e1e; color: white; font-size: 16px; border: none; padding: 10px; outline: none; resize: none; }
+        
+        /* Output Page */
+        #outputPage { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; color: white; padding: 20px; }
+        #outputPage button { background: red; color: white; border: none; padding: 10px; font-size: 18px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <button onclick="toggleSidebar()">☰</button>
+        <div class="title">Python</div>
+        <button class="run-btn" onclick="runCode()">▶️</button>
+    </div>
+    
+    <div class="editor-container">
+        <div class="line-numbers" id="lineNumbers">1</div>
+        <textarea id="codeEditor" oninput="updateLineNumbers()">print('Hello, Python!')</textarea>
+    </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <button id="closeSidebar" onclick="toggleSidebar()">✖</button>
+    <button id="pipButton" onclick="openPipPage()">PIP</button>
+    <button id="importFile">📂 Import File</button>
+</div>
+
+<!-- Output Page -->
+<div id="outputPage">
+    <button onclick="closeOutputPage()">🔙 Back</button>
+    <h2>Output:</h2>
+    <pre id="outputText"></pre>
+</div>
+
+<script>
+    function toggleSidebar() {
+        let sidebar = document.getElementById("sidebar");
+        sidebar.style.width = sidebar.style.width === "250px" ? "0" : "250px";
+    }
+
+    function openPipPage() {
+        window.open('/pip-modules', '_blank');
+    }
+
+    function runCode() {
+        let code = document.getElementById("codeEditor").value;
+        fetch('/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("outputText").innerText = data.output;
+            document.getElementById("outputPage").style.display = "block";
+        });
+    }
+
+    function closeOutputPage() {
+        document.getElementById("outputPage").style.display = "none";
+    }
+
+    function updateLineNumbers() {
+        let code = document.getElementById("codeEditor").value;
+        let lines = code.split("\n").length;
+        let lineNumbers = Array.from({ length: lines }, (_, i) => i + 1).join("\n");
+        document.getElementById("lineNumbers").innerText = lineNumbers;
+    }
+</script>
+
+</body>
+</html>
